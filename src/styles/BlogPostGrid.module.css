@@ -1,0 +1,10 @@
+.card {
+    height: 100%;   
+    border: none;
+}
+
+.card:hover {
+    /* we must use rgb to be able to support transparency */
+    box-shadow: rgba(var(--bs-primary-rgb), 0.35) 0px 5px 10px;
+    outline: 2px var(--bs-primary) solid
+}
