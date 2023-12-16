@@ -16,7 +16,7 @@ export default function FormInputField({
 }: FormInputFieldProps) {
     return (
         <Form.Group className="mb-3" controlId={register.name + '-input'}>
-            {label && <Form.Label>Post Title</Form.Label>}
+            {label && <Form.Label>{label}</Form.Label>}
             {/* we can use double bang operator to turn the error variable into a boolean */}
             <Form.Control {...register} {...props} isInvalid={!!error} />
             {/* this is a special component from react-bootstrap to showcase field's feedback like error msg. */}
