@@ -5,6 +5,7 @@ import FormInputField from '@/components/form/FormInputField'
 import MarkdownEditor from '@/components/form/MarkdownEditor'
 import { generateSlug } from '@/utils/utils'
 import LoadingButton from '@/components/LoadingButton'
+import { useRouter } from 'next/router'
 
 type CreateBlogFormData = {
     slug: string
@@ -15,6 +16,8 @@ type CreateBlogFormData = {
 }
 
 export default function CreateBlogPostPage() {
+    const router = useRouter()
+
     const {
         register,
         handleSubmit,
@@ -32,7 +35,7 @@ export default function CreateBlogPostPage() {
                 ...inputs,
                 blogImage: blogImage[0], // we only send the first index cuz that's what the createBlogPost expects.. a single File!
             })
-            alert('Post created successfuly')
+            await router.push('/blog/' + inputs.slug) //we await the router.push so that the formState isSubmitting would still be true while loading the router.push finnish!
         } catch (err) {
             console.error(err)
             alert(err)

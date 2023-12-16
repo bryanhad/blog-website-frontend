@@ -2,11 +2,11 @@ import { GetServerSideProps } from 'next'
 import Head from 'next/head'
 import * as BlogApi from '@/network/api/blog'
 import { BlogPost } from '@/models/blog-post'
-import BlogPostCard from '@/components/BlogPostCard'
-import { Col, Row } from 'react-bootstrap'
 import BlogPostsGrid from '@/components/BlogPostsGrid'
 
 // getServerSideProps only works in nextjs pages dir, and is only for pages, not components.
+// it's just a way to fetch the data at request time! so when the user receives the page, the content is already loaded!
+// this function is always going to run on each request!
 export const getServerSideProps: GetServerSideProps<
     BlogPageProps
 > = async () => {
