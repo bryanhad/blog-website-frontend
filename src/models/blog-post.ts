@@ -3,6 +3,7 @@ export type CreateBlogPostValues = {
     title: string
     summary: string
     body: string
+    blogImage: string
 }
 
 export type BlogPost = {

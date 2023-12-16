@@ -1,11 +1,18 @@
-import { Button, Form } from 'react-bootstrap'
-import type { CreateBlogPostValues } from '@/models/blog-post'
+import { Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import * as BlogApi from '@/network/api/blog'
 import FormInputField from '@/components/form/FormInputField'
 import MarkdownEditor from '@/components/form/MarkdownEditor'
 import { generateSlug } from '@/utils/utils'
 import LoadingButton from '@/components/LoadingButton'
+
+type CreateBlogFormData = {
+    slug: string
+    title: string
+    summary: string
+    body: string
+    blogImage: FileList // File list is just the native type of which input type 'file' returns.. an array of files. yeah. even though we only want one file.. :(
+}
 
 export default function CreateBlogPostPage() {
     const {
@@ -15,13 +22,16 @@ export default function CreateBlogPostPage() {
         setValue,
         getValues, //getValues only get the value when it is called.
         watch, //watch is updated in real time
-    } = useForm<CreateBlogPostValues>({})
+    } = useForm<CreateBlogFormData>({})
     // to use useformhook, first, we have to register all input fields.. it's simply just spreading the props..
     // then use pass our own onSubmit function to the handleSubmit, and pass that into onSubmit attr of the form..
 
-    async function onSubmit(input: CreateBlogPostValues) {
+    async function onSubmit({ blogImage, ...inputs }: CreateBlogFormData) {
         try {
-            const newBlog = await BlogApi.createBlogPost(input)
+            const newBlog = await BlogApi.createBlogPost({
+                ...inputs,
+                blogImage: blogImage[0], // we only send the first index cuz that's what the createBlogPost expects.. a single File!
+            })
             alert('Post created successfuly')
         } catch (err) {
             console.error(err)
@@ -62,6 +72,13 @@ export default function CreateBlogPostPage() {
                     maxLength={300}
                     as="textarea"
                     error={errors.summary}
+                />
+                <FormInputField
+                    label="Post Image"
+                    register={register('blogImage', { required: 'Required' })}
+                    type="file"
+                    accept="image/png,image/jpeg" //this will modify the file type when we click on the choose file input
+                    error={errors.blogImage}
                 />
                 <MarkdownEditor
                     watch={watch}
