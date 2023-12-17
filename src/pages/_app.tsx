@@ -10,12 +10,16 @@ import Footer from '@/components/Footer'
 import NextNProgress from 'nextjs-progressbar'
 import SignUpModal from '@/components/auth/SignUpModal'
 import LoginModal from '@/components/auth/LoginModal'
+import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 
 const inter = Inter({ subsets: ['latin'] })
 
 //this is like the layout.tsx in app directory!
 
 export default function App({ Component, pageProps }: AppProps) {
+    const { user, userLoading, userLoadingError, mutateUser } =
+        useAuthenticatedUser()
+
     return (
         <>
             <Head>
@@ -38,14 +42,20 @@ export default function App({ Component, pageProps }: AppProps) {
 
             <SSRProvider>
                 <div className={inter.className}>
-                    <NextNProgress color='#21FA90'/>
+                    <NextNProgress color="#21FA90" />
                     <NavBar />
+                    <h1>{user?.username}</h1>
                     <main>
                         <Container className={styles.mainContainer}>
                             <Component {...pageProps} />
                         </Container>
                     </main>
                     <Footer />
+                    {/* <LoginModal
+                        onDismiss={() => {}}
+                        onSignUpInsteadClicked={() => {}}
+                        onForgotPasswordClicked={() => {}}
+                    /> */}
                 </div>
             </SSRProvider>
         </>
