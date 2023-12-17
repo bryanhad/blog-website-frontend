@@ -1,9 +1,12 @@
 import { useForm } from 'react-hook-form'
 import * as UserApi from '@/network/api/users'
-import { Button, Form, Modal } from 'react-bootstrap'
+import { Alert, Button, Form, Modal } from 'react-bootstrap'
 import FormInputField from '../form/FormInputField'
 import PasswordInputField from '../form/PasswordInputField'
 import LoadingButton from '../LoadingButton'
+import { useState } from 'react'
+import { UnauthorizedError } from '@/network/http-errors'
+import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 type LoginFormData = {
     username: string
     password: string
@@ -20,6 +23,11 @@ export default function LoginModal({
     onSignUpInsteadClicked,
     onForgotPasswordClicked,
 }: LoginModalProps) {
+    const {mutateUser} = useAuthenticatedUser()
+
+    const [errorText, setErrorText] = useState<string | null>(null)
+
+
     const {
         register,
         handleSubmit,
@@ -28,11 +36,17 @@ export default function LoginModal({
 
     async function onSubmit(credentials: LoginFormData) {
         try {
+            setErrorText(null)
             const user = await UserApi.login(credentials)
-            alert(JSON.stringify(user))
+            mutateUser(user) //we update the 'user' cache with the user returned from this login call
+            onDismiss()            
         } catch (err) {
-            console.error(err)
-            alert(err)
+            if (err instanceof UnauthorizedError) {
+                setErrorText('Invalid credentials')
+            } else {
+                console.error(err)
+                alert(err)
+            }
         }
     }
 
@@ -42,6 +56,7 @@ export default function LoginModal({
                 <Modal.Title>Log In</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+                {errorText && <Alert variant="danger">{errorText}</Alert>}
                 <Form onSubmit={handleSubmit(onSubmit)} noValidate>
                     <FormInputField
                         register={register('username')}
@@ -72,9 +87,9 @@ export default function LoginModal({
                         Log In
                     </LoadingButton>
                 </Form>
-                <div className='d-flex align-items-center gap-1 justify-content-center mt-1'>
+                <div className="d-flex align-items-center gap-1 justify-content-center mt-1">
                     Don&apos;t have an account yet?
-                    <Button variant='link'>
+                    <Button variant="link" onClick={onSignUpInsteadClicked}>
                         Sign Up
                     </Button>
                 </div>

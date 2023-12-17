@@ -1,9 +1,12 @@
-import { Button, Form, Modal } from 'react-bootstrap'
+import { Alert, Button, Form, Modal } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import * as UserApi from '@/network/api/users'
 import FormInputField from '../form/FormInputField'
 import PasswordInputField from '../form/PasswordInputField'
 import LoadingButton from '../LoadingButton'
+import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
+import { useState } from 'react'
+import { BadRequstError, ConflictError } from '@/network/http-errors'
 
 type SignUpFormData = {
     username: string
@@ -20,6 +23,10 @@ export default function SignUpModal({
     onDismiss,
     onLoginInsteadClicked,
 }: SignUpModalProps) {
+    const {mutateUser} = useAuthenticatedUser()
+
+    const [errorText, setErrorText] = useState<string | null>(null)
+
     const {
         register,
         handleSubmit,
@@ -28,11 +35,17 @@ export default function SignUpModal({
 
     async function onSubmit(credentials: SignUpFormData) {
         try {
+            setErrorText(null)
             const newUser = await UserApi.signUp(credentials)
-            alert(JSON.stringify(newUser))
+            mutateUser(newUser)
+            onDismiss()
         } catch (err) {
-            console.error(err)
-            alert(err)
+            if (err instanceof ConflictError || err instanceof BadRequstError) { //conflict is if the username/password already exists, barReqError iss for if the email verivication code is wrong.. we haven't impllement this tho
+                setErrorText(err.message)
+            } else {
+                console.error(err)
+                alert(err)
+            }
         }
     }
 
@@ -43,6 +56,7 @@ export default function SignUpModal({
             </Modal.Header>
             <Modal.Body>
                 {/* no validate is to disable normal browser valdiation like for type email.. we will handle it our own */}
+                {errorText && <Alert variant="danger">{errorText}</Alert>}
                 <Form onSubmit={handleSubmit(onSubmit)} noValidate>
                     <FormInputField
                         register={register('username')}
@@ -74,7 +88,7 @@ export default function SignUpModal({
                 </Form>
                 <div className='d-flex align-items-center gap-1 justify-content-center mt-1'>
                     Already have an account?
-                    <Button variant='link'>
+                    <Button variant='link' onClick={onLoginInsteadClicked}>
                         Log In
                     </Button>
                 </div>
