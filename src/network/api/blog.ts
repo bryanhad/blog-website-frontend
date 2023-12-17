@@ -1,5 +1,5 @@
 import api from '@/network/axiosInstance'
-import { BlogPost } from '@/models/blog-post'
+import { BlogPost } from '@/models/blog-post.model'
 
 type CreateBlogValues = {
     slug: string

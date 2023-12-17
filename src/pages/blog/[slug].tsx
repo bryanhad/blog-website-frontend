@@ -1,6 +1,6 @@
 // in app router, the param is accessible through the params prop! it only is accessible when on a specific pages: like 'layout', 'page', or 'route'. and also 'generateMetadata' functions!
 
-import { BlogPost } from '@/models/blog-post'
+import { BlogPost } from '@/models/blog-post.model'
 import { GetStaticPaths, GetStaticProps } from 'next'
 import * as BlogApi from '@/network/api/blog'
 import Head from 'next/head'
@@ -70,15 +70,13 @@ export default function BlogPostPage({ blog }: BlogPostPageProps) {
                                 src={blog.blogImage}
                                 alt="Blog post image"
                                 fill //when u use fill attribute in nextImage, u will load the image to 100% of the viewport's width.. that is fine for a smaller size screen cuz the image width is probably the max width of the viewport.. but the problem lies in bigger screens! cuz usually the image isn't the same width as the viewport!
-                                sizes='(max-width: 768px) 100vw, 700px' // we use at what point do we want to render 100vw size, which refers to the breakpoint size that we set in next.config,, and after 768px screen width, we want to render the image at fixed width of 700px!
+                                sizes="(max-width: 768px) 100vw, 700px" // we use at what point do we want to render 100vw size, which refers to the breakpoint size that we set in next.config,, and after 768px screen width, we want to render the image at fixed width of 700px!
                                 priority
-                                className='rounded'
+                                className="rounded"
                             />
                         </div>
                     </div>
-                    <div>
-                        {blog.body}
-                    </div>
+                    <div>{blog.body}</div>
                 </article>
             </div>
         </>

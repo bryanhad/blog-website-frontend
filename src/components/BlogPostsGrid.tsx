@@ -1,7 +1,7 @@
 import React from 'react'
 import { Col, Row } from 'react-bootstrap'
 import BlogPostCard from './BlogPostCard'
-import { BlogPost } from '@/models/blog-post'
+import { BlogPost } from '@/models/blog-post.model'
 import styles from '@/styles/BlogPostGrid.module.css'
 
 type BlogPostGridProps = {
@@ -13,7 +13,7 @@ export default function BlogPostsGrid({ posts }: BlogPostGridProps) {
         <Row xs={1} sm={2} lg={3} className="g-4">
             {posts.map((post) => (
                 <Col key={post._id}>
-                    <BlogPostCard post={post} className={styles.card}/>
+                    <BlogPostCard post={post} className={styles.card} />
                 </Col>
             ))}
         </Row>

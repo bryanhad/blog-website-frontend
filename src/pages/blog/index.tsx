@@ -1,7 +1,7 @@
 import { GetServerSideProps } from 'next'
 import Head from 'next/head'
 import * as BlogApi from '@/network/api/blog'
-import { BlogPost } from '@/models/blog-post'
+import { BlogPost } from '@/models/blog-post.model'
 import BlogPostsGrid from '@/components/BlogPostsGrid'
 
 // getServerSideProps only works in nextjs pages dir, and is only for pages, not components.
