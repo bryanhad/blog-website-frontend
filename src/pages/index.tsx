@@ -7,6 +7,7 @@ export default function Home() {
       <div className={`${styles.main}`}>
         Helo home page!
         <Button>I am a button boi!</Button>
+
       </div>
   )
 }

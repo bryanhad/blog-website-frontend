@@ -2,7 +2,7 @@ import { User } from '@/models/user.model'
 import { GetServerSideProps } from 'next'
 import * as UsersApi from '@/network/api/users'
 import * as BlogAPi from '@/network/api/blog'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 import Head from 'next/head'
 import { Col, Form, Row, Spinner } from 'react-bootstrap'
@@ -16,6 +16,7 @@ import LoadingButton from '@/components/LoadingButton'
 import useSWR from 'swr'
 import BlogPostsGrid from '@/components/BlogPostsGrid'
 import { NotFoundError } from '@/network/http-errors'
+import PaginationBar from '@/components/PaginationBar'
 
 // getServerSideProps will fetch serverSide, but not on build time like getStaticParam
 // we do this cuz we always want to get the latest data
@@ -25,13 +26,12 @@ export const getServerSideProps: GetServerSideProps<
     try {
         const username = params?.username?.toString()
         if (!username) throw Error('username param is missing')
-    
-        const user = await UsersApi.getUserByUsername(username)
-    
-        return { props: { user } }
+
+        const userInfo = await UsersApi.getUserByUsername(username)
+        return { props: { userInfo } }
     } catch (err) {
         if (err instanceof NotFoundError) {
-            return {notFound: true}
+            return { notFound: true }
         } else {
             throw err
         }
@@ -39,14 +39,18 @@ export const getServerSideProps: GetServerSideProps<
 }
 
 type UserProfilePageProps = {
-    user: User
+    userInfo: User
 }
 
-export default function UserProfilePage({ user }: UserProfilePageProps) {
+export default function UserProfilePage({ userInfo }: UserProfilePageProps) {
     const { user: loggedInUser, mutateUser: mutateLoggedInUser } =
         useAuthenticatedUser()
 
-    const [profileUser, setProfileUser] = useState(user)
+    const [profileUser, setProfileUser] = useState(userInfo)
+    // useEffect(() => {
+    //     setProfileUser(userInfo)
+    // }, [userInfo])
+
 
     const profileUserIsLoggedInUser =
         (loggedInUser && loggedInUser._id === profileUser._id) || false
@@ -196,24 +200,49 @@ type UserBlogsSectionProps = {
 }
 
 function UserBlogsSection({ user }: UserBlogsSectionProps) {
+    //client side pagination, u can use state!
+
+    const [page, setPage] = useState(1)
+
     const {
-        data: blogPosts,
+        data,
         isLoading: blogPostsLoading,
         error: BlogPostsLoadingError,
-    } = useSWR(user._id, BlogAPi.getBlogPostByUser)
+    } = useSWR(
+        [user._id, page, 'user_posts'], //we can pass multiple params as the cache key! these would be passed into the fetcher function
+        //we need all the unique keys that is associated wit the function that we are going to make, to make sure there are no cache clashes!
+        // for example, if u only pass in the user._id as the unique cache key for this cache, and just pass the page param to the fetcher callback, you would still get the cached value from the first call, cuz both calls has the same cache key!
+        ([userId, pageNum]) => BlogAPi.getBlogPostByUser(userId, pageNum)
+    )
     //the key would be forwarded to the function callback!
-    //it is the same as (userId) => BlogApi.getBlogPostByUser(userId)
+
+    const blogPosts = data?.blogPosts || []
+    const totalPages = data?.totalPages || 0
+
     return (
         <div>
             <h2>Blog Posts</h2>
+            {blogPosts.length > 0 && <BlogPostsGrid posts={blogPosts} />}
             <div className="d-flex flex-column align-items-center">
                 {blogPostsLoading && <Spinner animation="border" />}
+
                 {BlogPostsLoadingError && <p>Blog posts could not be loaded</p>}
-                {blogPosts?.length === 0 && (
-                    <p>This user hasn&apos;t posted anything yet</p>
+
+                {!blogPostsLoading &&
+                    !BlogPostsLoadingError &&
+                    blogPosts.length === 0 && (
+                        <p>This user hasn&apos;t posted anything yet</p>
+                    )}
+
+                {blogPosts.length > 0 && (
+                    <PaginationBar
+                        currentPage={page}
+                        pageCount={totalPages}
+                        onPageItemClicked={(pageNum) => setPage(pageNum)}
+                        className="mt-4"
+                    />
                 )}
             </div>
-            {blogPosts && <BlogPostsGrid posts={blogPosts} />}
         </div>
     )
 }

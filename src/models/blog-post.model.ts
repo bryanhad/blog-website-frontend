@@ -13,3 +13,9 @@ export type BlogPost = {
     createdAt: string
     updatedAt: string
 }
+
+export type BlogPostsPage = {
+    blogPosts: BlogPost[]
+    page: number
+    totalPages: number
+}

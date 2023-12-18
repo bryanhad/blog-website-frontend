@@ -1,5 +1,5 @@
 import api from '@/network/axiosInstance'
-import { BlogPost } from '@/models/blog-post.model'
+import { BlogPost, BlogPostsPage } from '@/models/blog-post.model'
 
 type CreateBlogValues = {
     slug: string
@@ -9,13 +9,13 @@ type CreateBlogValues = {
     blogImage: File
 }
 
-export async function getBlogPost() {
-    const res = await api.get<BlogPost[]>('/posts')
+export async function getBlogPost(page:number = 1) {
+    const res = await api.get<BlogPostsPage>('/posts?page=' + page)
     return res.data
 }
 
-export async function getBlogPostByUser(userId:string) {
-    const res = await api.get<BlogPost[]>(`/posts?authorId=${userId}`)
+export async function getBlogPostByUser(userId:string, page:number = 1) {
+    const res = await api.get<BlogPostsPage>(`/posts?authorId=${userId}&page=${page}`)
     return res.data
 }
 

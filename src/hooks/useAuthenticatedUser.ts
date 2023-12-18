@@ -4,7 +4,7 @@ import useSWR from 'swr'
 
 export default function useAuthenticatedUser() {
     const { data, isLoading, error, mutate } = useSWR(
-        'user',
+        'authenticated_user',
         async() => {
             try {
                 return await UsersApi.getAuthenticatedUser() //this call uses axios, so if axios returns an error, it would be an instance of axiosError! and so we can do the checking whether the error is one of our defined error in our axios interceptors middleware 
