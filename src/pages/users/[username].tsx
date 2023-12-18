@@ -42,7 +42,14 @@ type UserProfilePageProps = {
     userInfo: User
 }
 
-export default function UserProfilePage({ userInfo }: UserProfilePageProps) {
+export default function UserProfilePage({userInfo}:UserProfilePageProps) {
+    return (
+        <UserProfile userInfo={userInfo} key={userInfo._id}/> //this is niceee.. NO NEED FOR USE EFFECT!!
+        // TO HELL OH USE EFFECT THE CAUSE OF UNNECESSARY RERENDERSS >:D
+    )
+}
+
+function UserProfile({ userInfo }: UserProfilePageProps) {
     const { user: loggedInUser, mutateUser: mutateLoggedInUser } =
         useAuthenticatedUser()
 
@@ -50,6 +57,8 @@ export default function UserProfilePage({ userInfo }: UserProfilePageProps) {
     // useEffect(() => {
     //     setProfileUser(userInfo)
     // }, [userInfo])
+    // this is the usual way of handling a change in the initialstate of the state! but it is not recommended cuz it is not optimal and can cause unnecessary rerenders.. instead we can wrap this whole component to be passed a key which must be unique!
+    // when the key's value changes, react knows that the state of the initialstate is not relevant anymore, so the updated initialState will be shown !
 
 
     const profileUserIsLoggedInUser =
