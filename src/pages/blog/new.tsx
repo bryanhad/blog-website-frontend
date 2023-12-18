@@ -1,15 +1,16 @@
-import { Form, Spinner } from 'react-bootstrap'
-import { useForm } from 'react-hook-form'
-import * as BlogApi from '@/network/api/blog'
+import LoadingButton from '@/components/LoadingButton'
 import FormInputField from '@/components/form/FormInputField'
 import MarkdownEditor from '@/components/form/MarkdownEditor'
-import { generateSlug } from '@/utils/utils'
-import LoadingButton from '@/components/LoadingButton'
-import { useRouter } from 'next/router'
-import * as yup from 'yup'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { requiredFileSchema, requiredStringSchema, slugSchema } from '@/utils/validation'
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
+import useUnsavedChangesWarning from '@/hooks/useUnsavedChangesWarning'
+import * as BlogApi from '@/network/api/blog'
+import { generateSlug } from '@/utils/utils'
+import { requiredFileSchema, requiredStringSchema, slugSchema } from '@/utils/validation'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { useRouter } from 'next/router'
+import { Form, Spinner } from 'react-bootstrap'
+import { useForm } from 'react-hook-form'
+import * as yup from 'yup'
 
 const validationSchema = yup.object({
     slug: slugSchema.required('Required'),
@@ -30,7 +31,7 @@ export default function CreateBlogPostPage() {
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting },
+        formState: { errors, isSubmitting, isDirty }, //isDirty would be true if the user has touched the form
         setValue,
         getValues, //getValues only get the value when it is called.
         watch, //watch is updated in real time
@@ -56,6 +57,10 @@ export default function CreateBlogPostPage() {
         const slug = generateSlug(getValues('title'))
         setValue('slug', slug, { shouldValidate: true })
     }
+
+    useUnsavedChangesWarning(isDirty && !isSubmitting) //the condition to show the unsaved changes warning is that the form is dirty, and IS NOT SUBMITTING!
+    // cuz when we submit the form, on onSubmit there is a redirect using router.push() to the main blog page. and that would trigger the unsaved changes warning! 
+    //it's kinda weird to get unsaved change warning when u have already submitted ur blog no? ps: ofcourse it is lol
 
     if (userLoading) {
         return <Spinner animation='border' className='d-block m-auto'/>
