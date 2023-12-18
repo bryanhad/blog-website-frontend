@@ -1,18 +1,20 @@
 import { User } from '@/models/user.model'
 import { GetServerSideProps } from 'next'
 import * as UsersApi from '@/network/api/users'
+import * as BlogAPi from '@/network/api/blog'
 import { useState } from 'react'
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 import Head from 'next/head'
-import { Col, Form, Row } from 'react-bootstrap'
+import { Col, Form, Row, Spinner } from 'react-bootstrap'
 import Image from 'next/image'
 import styles from '@/styles/UserProfilePage.module.css'
 import { formatDate } from '@/utils/utils'
 import * as yup from 'yup'
-import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm } from 'react-hook-form'
 import FormInputField from '@/components/form/FormInputField'
 import LoadingButton from '@/components/LoadingButton'
+import useSWR from 'swr'
+import BlogPostsGrid from '@/components/BlogPostsGrid'
 
 // getServerSideProps will fetch serverSide, but not on build time like getStaticParam
 // we do this cuz we always want to get the latest data
@@ -62,6 +64,8 @@ export default function UserProfilePage({ user }: UserProfilePageProps) {
                         />
                     </>
                 )}
+                <hr />
+                <UserBlogsSection user={profileUser} />
             </div>
         </>
     )
@@ -174,6 +178,33 @@ function UpdateUserProfileSection({
                     Update Profile
                 </LoadingButton>
             </Form>
+        </div>
+    )
+}
+
+type UserBlogsSectionProps = {
+    user: User
+}
+
+function UserBlogsSection({ user }: UserBlogsSectionProps) {
+    const {
+        data: blogPosts,
+        isLoading: blogPostsLoading,
+        error: BlogPostsLoadingError,
+    } = useSWR(user._id, BlogAPi.getBlogPostByUser)
+    //the key would be forwarded to the function callback!
+    //it is the same as (userId) => BlogApi.getBlogPostByUser(userId)
+    return (
+        <div>
+            <h2>Blog Posts</h2>
+            <div className="d-flex flex-column align-items-center">
+                {blogPostsLoading && <Spinner animation="border" />}
+                {BlogPostsLoadingError && <p>Blog posts could not be loaded</p>}
+                {blogPosts?.length === 0 && (
+                    <p>This user hasn&apos;t posted anything yet</p>
+                )}
+            </div>
+            {blogPosts && <BlogPostsGrid posts={blogPosts} />}
         </div>
     )
 }
