@@ -9,6 +9,8 @@ import Link from 'next/link'
 import { formatDate } from '@/utils/utils'
 import Image from 'next/image'
 import { NotFoundError } from '@/network/http-errors'
+import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
+import { FiEdit } from 'react-icons/fi'
 
 // getStaticProps is better for SEO,
 // cuz it will fetch and make the HTML and fill it with the data at build time! so it will just serve it like instantly! WOAW! :O
@@ -36,7 +38,8 @@ export const getStaticProps: GetStaticProps<BlogPostPageProps> = async ({
         const blog = await BlogApi.getBlogPostBySlug(slug)
         return { props: { blog } }
     } catch (err) {
-        if (err instanceof NotFoundError) { //if the error is notfound, go to notfound page! not the error page
+        if (err instanceof NotFoundError) {
+            //if the error is notfound, go to notfound page! not the error page
             return { notFound: true }
         } else {
             throw err
@@ -45,6 +48,8 @@ export const getStaticProps: GetStaticProps<BlogPostPageProps> = async ({
 }
 
 export default function BlogPostPage({ blog }: BlogPostPageProps) {
+    const { user } = useAuthenticatedUser()
+
     const createdUpdatedText =
         blog.updatedAt > blog.createdAt ? (
             <>
@@ -65,6 +70,15 @@ export default function BlogPostPage({ blog }: BlogPostPageProps) {
             </Head>
 
             <div className={styles.container}>
+                {user?._id === blog.author._id && (
+                    <Link
+                        href={`/blog/edit/${blog.slug}`}
+                        className="btn btn-outline-primary d-inline-flex align-items-center gap-1 mb-2"
+                    >
+                        <FiEdit />
+                        Edit post
+                    </Link>
+                )}
                 <div className="text-center mb-4">
                     <Link href="/blog">Blog Home</Link>
                 </div>

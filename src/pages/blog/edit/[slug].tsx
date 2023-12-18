@@ -1,51 +1,80 @@
-import LoadingButton from '@/components/LoadingButton'
-import FormInputField from '@/components/form/FormInputField'
-import MarkdownEditor from '@/components/form/MarkdownEditor'
-import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
-import useUnsavedChangesWarning from '@/hooks/useUnsavedChangesWarning'
+import { BlogPost } from '@/models/blog-post.model'
+import { GetServerSideProps } from 'next'
 import * as BlogApi from '@/network/api/blog'
-import { generateSlug } from '@/utils/utils'
-import { requiredFileSchema, requiredStringSchema, slugSchema } from '@/utils/validation'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { useRouter } from 'next/router'
-import { Form, Spinner } from 'react-bootstrap'
+import { NotFoundError } from '@/network/http-errors'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
+import { requiredStringSchema, slugSchema } from '@/utils/validation'
+import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
+import { useRouter } from 'next/router'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { Form, Spinner } from 'react-bootstrap'
+import FormInputField from '@/components/form/FormInputField'
+import MarkdownEditor from '@/components/form/MarkdownEditor'
+import LoadingButton from '@/components/LoadingButton'
+import { generateSlug } from '@/utils/utils'
+
+export const getServerSideProps: GetServerSideProps<
+    EditBlogPageProps
+> = async ({ params }) => {
+    try {
+        const slug = params?.slug?.toString()
+        if (!slug) throw Error('missing slug!')
+
+        const blog = await BlogApi.getBlogPostBySlug(slug)
+        return { props: { blog } }
+    } catch (err) {
+        if (err instanceof NotFoundError) {
+            return { notFound: true }
+        } else {
+            throw err
+        }
+    }
+}
+
+type EditBlogPageProps = {
+    blog: BlogPost
+}
 
 const validationSchema = yup.object({
     slug: slugSchema.required('Required'),
     title: requiredStringSchema,
     summary: requiredStringSchema,
     body: requiredStringSchema,
-    blogImage: requiredFileSchema
+    blogImage: yup.mixed<FileList>(),
 })
 
+type EditPostFormData = yup.InferType<typeof validationSchema>
 
-type CreateBlogFormData = yup.InferType<typeof validationSchema>
-
-export default function CreateBlogPostPage() {
-    const {user, userLoading} = useAuthenticatedUser()
+export default function EditBlogPage({ blog }: EditBlogPageProps) {
+    const { user, userLoading } = useAuthenticatedUser()
 
     const router = useRouter()
 
     const {
         register,
+        formState: { errors, isSubmitting, isDirty },
         handleSubmit,
-        formState: { errors, isSubmitting, isDirty }, //isDirty would be true if the user has touched the form
         setValue,
-        getValues, //getValues only get the value when it is called.
-        watch, //watch is updated in real time
-    } = useForm<CreateBlogFormData>({resolver: yupResolver(validationSchema)})
-    // to use useformhook, first, we have to register all input fields.. it's simply just spreading the props..
-    // then use pass our own onSubmit function to the handleSubmit, and pass that into onSubmit attr of the form..
+        getValues,
+        watch,
+    } = useForm<EditPostFormData>({
+        resolver: yupResolver(validationSchema),
+        defaultValues: {
+            title: blog.title,
+            slug: blog.slug,
+            summary: blog.summary,
+            body: blog.body,
+        },
+    })
 
-    async function onSubmit({ blogImage, ...inputs }: CreateBlogFormData) {
+    async function onSubmit({ blogImage, ...inputs }: EditPostFormData) {
         try {
-            const newBlog = await BlogApi.createBlogPost({
+            await BlogApi.UpdateBlogPost(blog._id, {
                 ...inputs,
-                blogImage: blogImage[0], // we only send the first index cuz that's what the createBlogPost expects.. a single File!
+                blogImage: blogImage?.item(0) || undefined, //get the first index of the fileList of field blogImage
             })
-            await router.push('/blog/' + inputs.slug) //we await the router.push so that the formState isSubmitting would still be true while loading the router.push finnish!
+            await router.push('/blog/' + inputs.slug) // awaiting the router.push is important so that the form's isSubmitting state would be true until the router.push finished it's execution
         } catch (err) {
             console.error(err)
             alert(err)
@@ -58,19 +87,16 @@ export default function CreateBlogPostPage() {
         setValue('slug', slug, { shouldValidate: true })
     }
 
-    useUnsavedChangesWarning(isDirty && !isSubmitting) //the condition to show the unsaved changes warning is that the form is dirty, and IS NOT SUBMITTING!
-    // cuz when we submit the form, on onSubmit there is a redirect using router.push() to the main blog page. and that would trigger the unsaved changes warning! 
-    //it's kinda weird to get unsaved change warning when u have already submitted ur blog no? ps: ofcourse it is lol
-
-    if (userLoading) {
-        return <Spinner animation='border' className='d-block m-auto'/>
-    }
-
+    
     if (!userLoading && !user) router.push('/')
+    
+    if (userLoading) {
+        return <Spinner animation="border" className="d-block m-auto" />
+    }
 
     return (
         <div>
-            <h1>Create blog</h1>
+            <h1>Edit Blog</h1>
             <Form onSubmit={handleSubmit(onSubmit)}>
                 {/* cnotrolId takes care of linking between lavel and the input */}
                 <FormInputField
@@ -111,7 +137,7 @@ export default function CreateBlogPostPage() {
                     error={errors.body}
                 />
                 <LoadingButton isLoading={isSubmitting} type="submit">
-                    Create Post
+                    Update Post
                 </LoadingButton>
             </Form>
         </div>

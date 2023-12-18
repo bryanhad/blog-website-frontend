@@ -39,3 +39,26 @@ export async function createBlogPost(input: CreateBlogValues) {
     const res = await api.post<BlogPost>('/posts', formData)
     return res.data
 }
+
+type UpdateBlogPostValues = {
+    slug: string
+    title: string
+    summary: string
+    body: string
+    blogImage?: File
+}
+
+export async function UpdateBlogPost(blogId:string, input:UpdateBlogPostValues) {
+    const formData = new FormData() //formData supports file type!
+    Object.entries(input).forEach(([key, value]) => {
+        if (value !== undefined) { //cuz if the blogImage's value is undefined, we don't want to append it to the formData
+            formData.append(key, value)
+        }
+    })
+
+    await api.patch(`/posts/${blogId}`, formData)
+}
+
+export async function deleteBlog(blogId:string) {
+    await api.delete(`/posts/${blogId}`)
+}
