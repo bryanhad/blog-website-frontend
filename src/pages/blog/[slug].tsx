@@ -8,6 +8,7 @@ import styles from '@/styles/BlogPostPage.module.css'
 import Link from 'next/link'
 import { formatDate } from '@/utils/utils'
 import Image from 'next/image'
+import { NotFoundError } from '@/network/http-errors'
 
 // getStaticProps is better for SEO,
 // cuz it will fetch and make the HTML and fill it with the data at build time! so it will just serve it like instantly! WOAW! :O
@@ -28,11 +29,19 @@ type BlogPostPageProps = {
 export const getStaticProps: GetStaticProps<BlogPostPageProps> = async ({
     params,
 }) => {
-    const slug = params?.slug?.toString()
-    if (!slug) throw Error('missing slug!')
+    try {
+        const slug = params?.slug?.toString()
+        if (!slug) throw Error('missing slug!')
 
-    const blog = await BlogApi.getBlogPostBySlug(slug)
-    return { props: { blog } }
+        const blog = await BlogApi.getBlogPostBySlug(slug)
+        return { props: { blog } }
+    } catch (err) {
+        if (err instanceof NotFoundError) { //if the error is notfound, go to notfound page! not the error page
+            return { notFound: true }
+        } else {
+            throw err
+        }
+    }
 }
 
 export default function BlogPostPage({ blog }: BlogPostPageProps) {

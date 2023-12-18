@@ -15,18 +15,27 @@ import FormInputField from '@/components/form/FormInputField'
 import LoadingButton from '@/components/LoadingButton'
 import useSWR from 'swr'
 import BlogPostsGrid from '@/components/BlogPostsGrid'
+import { NotFoundError } from '@/network/http-errors'
 
 // getServerSideProps will fetch serverSide, but not on build time like getStaticParam
 // we do this cuz we always want to get the latest data
 export const getServerSideProps: GetServerSideProps<
     UserProfilePageProps
 > = async ({ params }) => {
-    const username = params?.username?.toString()
-    if (!username) throw Error('username param is missing')
-
-    const user = await UsersApi.getUserByUsername(username)
-
-    return { props: { user } }
+    try {
+        const username = params?.username?.toString()
+        if (!username) throw Error('username param is missing')
+    
+        const user = await UsersApi.getUserByUsername(username)
+    
+        return { props: { user } }
+    } catch (err) {
+        if (err instanceof NotFoundError) {
+            return {notFound: true}
+        } else {
+            throw err
+        }
+    }
 }
 
 type UserProfilePageProps = {
