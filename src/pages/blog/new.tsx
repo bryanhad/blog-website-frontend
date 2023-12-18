@@ -6,14 +6,20 @@ import MarkdownEditor from '@/components/form/MarkdownEditor'
 import { generateSlug } from '@/utils/utils'
 import LoadingButton from '@/components/LoadingButton'
 import { useRouter } from 'next/router'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { requiredFileSchema, requiredStringSchema, slugSchema } from '@/utils/validation'
 
-type CreateBlogFormData = {
-    slug: string
-    title: string
-    summary: string
-    body: string
-    blogImage: FileList // File list is just the native type of which input type 'file' returns.. an array of files. yeah. even though we only want one file.. :(
-}
+const validationSchema = yup.object({
+    slug: slugSchema.required('Required'),
+    title: requiredStringSchema,
+    summary: requiredStringSchema,
+    body: requiredStringSchema,
+    blogImage: requiredFileSchema
+})
+
+
+type CreateBlogFormData = yup.InferType<typeof validationSchema>
 
 export default function CreateBlogPostPage() {
     const router = useRouter()
@@ -25,7 +31,7 @@ export default function CreateBlogPostPage() {
         setValue,
         getValues, //getValues only get the value when it is called.
         watch, //watch is updated in real time
-    } = useForm<CreateBlogFormData>({})
+    } = useForm<CreateBlogFormData>({resolver: yupResolver(validationSchema)})
     // to use useformhook, first, we have to register all input fields.. it's simply just spreading the props..
     // then use pass our own onSubmit function to the handleSubmit, and pass that into onSubmit attr of the form..
 
@@ -55,7 +61,7 @@ export default function CreateBlogPostPage() {
                 {/* cnotrolId takes care of linking between lavel and the input */}
                 <FormInputField
                     label="Post Title"
-                    register={register('title', { required: 'Required' })} // will not submit if is not filled! will auto focus to the input field instead! nice,  the mesage will be put to the react-hook-form's form state.
+                    register={register('title')} // will not submit if is not filled! will auto focus to the input field instead! nice,  the mesage will be put to the react-hook-form's form state.
                     placeholder="Post Title"
                     maxLength={100}
                     error={errors.title}
@@ -63,14 +69,14 @@ export default function CreateBlogPostPage() {
                 />
                 <FormInputField
                     label="Post Slug"
-                    register={register('slug', { required: 'Required' })}
+                    register={register('slug')}
                     placeholder="Post Slug"
                     maxLength={100}
                     error={errors.slug}
                 />
                 <FormInputField
                     label="Post Summary"
-                    register={register('summary', { required: 'Required' })}
+                    register={register('summary')}
                     placeholder="Post Summary"
                     maxLength={300}
                     as="textarea"
@@ -78,7 +84,7 @@ export default function CreateBlogPostPage() {
                 />
                 <FormInputField
                     label="Post Image"
-                    register={register('blogImage', { required: 'Required' })}
+                    register={register('blogImage')}
                     type="file"
                     accept="image/png,image/jpeg" //this will modify the file type when we click on the choose file input
                     error={errors.blogImage}
@@ -87,7 +93,7 @@ export default function CreateBlogPostPage() {
                     watch={watch}
                     setValue={setValue}
                     label="Post Body"
-                    register={register('body', { required: 'Required' })}
+                    register={register('body')}
                     error={errors.body}
                 />
                 <LoadingButton isLoading={isSubmitting} type="submit">

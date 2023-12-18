@@ -7,10 +7,17 @@ import LoadingButton from '../LoadingButton'
 import { useState } from 'react'
 import { UnauthorizedError } from '@/network/http-errors'
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
-type LoginFormData = {
-    username: string
-    password: string
-}
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { requiredStringSchema } from '@/utils/validation'
+
+//setup validation schema with yup
+const validationSchema = yup.object({
+    username: requiredStringSchema,
+    password: requiredStringSchema,
+})
+
+type LoginFormData = yup.InferType<typeof validationSchema>
 
 type LoginModalProps = {
     onDismiss: () => void
@@ -23,23 +30,22 @@ export default function LoginModal({
     onSignUpInsteadClicked,
     onForgotPasswordClicked,
 }: LoginModalProps) {
-    const {mutateUser} = useAuthenticatedUser()
+    const { mutateUser } = useAuthenticatedUser()
 
     const [errorText, setErrorText] = useState<string | null>(null)
-
 
     const {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-    } = useForm<LoginFormData>()
+    } = useForm<LoginFormData>({ resolver: yupResolver(validationSchema) })
 
     async function onSubmit(credentials: LoginFormData) {
         try {
             setErrorText(null)
             const user = await UserApi.login(credentials)
             mutateUser(user) //we update the 'user' cache with the user returned from this login call
-            onDismiss()            
+            onDismiss()
         } catch (err) {
             if (err instanceof UnauthorizedError) {
                 setErrorText('Invalid credentials')

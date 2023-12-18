@@ -7,12 +7,17 @@ import LoadingButton from '../LoadingButton'
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 import { useState } from 'react'
 import { BadRequstError, ConflictError } from '@/network/http-errors'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { emailSchema, passwordSchema, usernameSchema } from '@/utils/validation'
 
-type SignUpFormData = {
-    username: string
-    email: string
-    password: string
-}
+const validationSchema = yup.object({
+    username: usernameSchema.required('Required'),
+    email: emailSchema.required('Required'),
+    password: passwordSchema.required('Required'),
+})
+
+type SignUpFormData = yup.InferType<typeof validationSchema>
 
 type SignUpModalProps = {
     onDismiss: () => void
@@ -31,7 +36,7 @@ export default function SignUpModal({
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-    } = useForm<SignUpFormData>()
+    } = useForm<SignUpFormData>({resolver: yupResolver(validationSchema)})
 
     async function onSubmit(credentials: SignUpFormData) {
         try {
