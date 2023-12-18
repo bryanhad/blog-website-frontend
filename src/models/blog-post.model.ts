@@ -1,3 +1,5 @@
+import { User } from "./user.model"
+
 export type BlogPost = {
     _id: string
 
@@ -6,6 +8,7 @@ export type BlogPost = {
     summary: string
     body: string
     blogImage: string
+    author: User
 
     createdAt: string
     updatedAt: string

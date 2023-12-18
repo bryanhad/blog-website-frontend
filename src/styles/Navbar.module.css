@@ -8,3 +8,8 @@
     -moz-text-fill-color: transparent;
     font-weight: bold;
 }
+
+.accountDropdown :global(.dropdown-toggle) { /*we can use :global to make the module.css behave like a global css*/
+    padding-top: 0;
+    padding-bottom: 0;
+}

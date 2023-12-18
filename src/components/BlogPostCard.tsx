@@ -3,6 +3,7 @@ import { formatDate } from '@/utils/utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Card } from 'react-bootstrap'
+import UserProfileLink from './UserProfileLink'
 
 type BlogPostCardProps = {
     post: BlogPost
@@ -10,7 +11,7 @@ type BlogPostCardProps = {
 }
 
 export default function BlogPostCard({
-    post: { slug, title, summary, blogImage, createdAt },
+    post: { slug, title, summary, blogImage, author, createdAt },
     className,
 }: BlogPostCardProps) {
     const postLink = '/blog/' + slug
@@ -32,6 +33,9 @@ export default function BlogPostCard({
                         <Link href={postLink}>{title}</Link>
                     </Card.Title>
                     <Card.Text>{summary}</Card.Text>
+                    <Card.Text>
+                        <UserProfileLink user={author} />
+                    </Card.Text>
                     <Card.Text className="text-muted small">
                         {/* use time html tag for better SEO and crawler would be happy! */}
                         {/* this helps crawler to understand more about ur date stuffs */}

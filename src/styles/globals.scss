@@ -1,6 +1,10 @@
 @import 'custom-theme';
 @import 'react-markdown-editor-lite/lib/index.css';
 
+:root {
+    --popup-box-shadow: 3px 3px 13px 4px rgba(0, 0, 0, 0.3);
+}
+
 * {
     box-sizing: border-box;
     padding: 0;
@@ -21,6 +25,18 @@ a,
 .btn-link {
     text-decoration: none;
     padding: 0;
+}
+
+.tooltip.show {
+    opacity: 1;
+}
+
+.dropdown-menu {
+    box-shadow: var(--popup-box-shadow);
+}
+
+.tooltip-inner {
+    box-shadow: var(--popup-box-shadow);
 }
 
 .btn-close {

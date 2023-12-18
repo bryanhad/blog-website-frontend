@@ -4,10 +4,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
-import { Button, Container, Nav, Navbar } from 'react-bootstrap'
+import { Button, Container, Nav, NavDropdown, Navbar } from 'react-bootstrap'
 import { FiEdit } from 'react-icons/fi'
 import LoginModal from './auth/LoginModal'
 import SignUpModal from './auth/SignUpModal'
+import { User } from '@/models/user.model'
+import * as UsersApi from '@/network/api/users'
 
 export default function NavBar() {
     const { user } = useAuthenticatedUser()
@@ -53,14 +55,30 @@ export default function NavBar() {
                             Blogs
                         </Nav.Link>
                     </Nav>
-                    {user ? <LoggedInView /> : <LoggedOutView />}
+                    {user ? <LoggedInView user={user} /> : <LoggedOutView />}
                 </Navbar.Collapse>
             </Container>
         </Navbar>
     )
 }
 
-function LoggedInView() {
+type LoggedInViewProps = {
+    user: User
+}
+
+function LoggedInView({ user }: LoggedInViewProps) {
+    const { mutateUser } = useAuthenticatedUser() //for logout
+
+    async function logout() {
+        try {
+            await UsersApi.logout()
+            mutateUser(null) //set the cached user by SWR to null
+        } catch (err) {
+            console.error(err)
+            alert(err)
+        }
+    }
+
     return (
         <Nav className="ms-auto">
             <Nav.Link
@@ -71,6 +89,35 @@ function LoggedInView() {
                 <FiEdit />
                 Create post
             </Nav.Link>
+            {/* when the user signed up using social prrovider, the displayname isn't set by defaullt*/}
+            <Navbar.Text className="ms-md-3">
+                Hey, {user.displayName || 'User'}!
+            </Navbar.Text>
+            <NavDropdown
+                className={styles.accountDropdown}
+                title={
+                    <Image
+                        src={user.profilePictureUrl || '/no-profile-pic.png'}
+                        alt="User profile picture"
+                        width={40}
+                        height={40}
+                        className="rounded-circle"
+                    />
+                }
+            >
+                {user.username && (
+                    <>
+                    <NavDropdown.Item
+                        as={Link}
+                        href={'/users/' + user?.username}
+                    >
+                        Profile
+                    </NavDropdown.Item>
+                    <NavDropdown.Divider/>
+                    </>
+                )}
+                <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
+            </NavDropdown>
         </Nav>
     )
 }
