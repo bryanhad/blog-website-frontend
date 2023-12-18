@@ -8,11 +8,14 @@ import { requiredStringSchema, slugSchema } from '@/utils/validation'
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 import { useRouter } from 'next/router'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Form, Spinner } from 'react-bootstrap'
+import { Button, Form, Spinner } from 'react-bootstrap'
 import FormInputField from '@/components/form/FormInputField'
 import MarkdownEditor from '@/components/form/MarkdownEditor'
 import LoadingButton from '@/components/LoadingButton'
 import { generateSlug } from '@/utils/utils'
+import { useState } from 'react'
+import ConfirmationModal from '@/components/ConfirmationModal'
+import useUnsavedChangesWarning from '@/hooks/useUnsavedChangesWarning'
 
 export const getServerSideProps: GetServerSideProps<
     EditBlogPageProps
@@ -51,6 +54,9 @@ export default function EditBlogPage({ blog }: EditBlogPageProps) {
 
     const router = useRouter()
 
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [deleteLoading, setDeleteLoading] = useState(false)
+
     const {
         register,
         formState: { errors, isSubmitting, isDirty },
@@ -81,15 +87,29 @@ export default function EditBlogPage({ blog }: EditBlogPageProps) {
         }
     }
 
+    async function onDeleteConfirmed() {
+        setShowDeleteModal(false)
+        setDeleteLoading(true)
+        try {
+            await BlogApi.deleteBlog(blog._id)
+            router.push('/blog')
+        } catch (err) {
+            setDeleteLoading(false)
+            console.error(err)
+            alert(err)
+        }
+    }
+
     function generateSlugFromTitle() {
         if (getValues('slug')) return
         const slug = generateSlug(getValues('title'))
         setValue('slug', slug, { shouldValidate: true })
     }
 
-    
+    useUnsavedChangesWarning(isDirty && !isSubmitting && !deleteLoading)
+
     if (!userLoading && !user) router.push('/')
-    
+
     if (userLoading) {
         return <Spinner animation="border" className="d-block m-auto" />
     }
@@ -97,49 +117,73 @@ export default function EditBlogPage({ blog }: EditBlogPageProps) {
     return (
         <div>
             <h1>Edit Blog</h1>
-            <Form onSubmit={handleSubmit(onSubmit)}>
-                {/* cnotrolId takes care of linking between lavel and the input */}
-                <FormInputField
-                    label="Post Title"
-                    register={register('title')} // will not submit if is not filled! will auto focus to the input field instead! nice,  the mesage will be put to the react-hook-form's form state.
-                    placeholder="Post Title"
-                    maxLength={100}
-                    error={errors.title}
-                    onBlur={generateSlugFromTitle} //attribute from normal input tag! will run the function when the user took off the focus
-                />
-                <FormInputField
-                    label="Post Slug"
-                    register={register('slug')}
-                    placeholder="Post Slug"
-                    maxLength={100}
-                    error={errors.slug}
-                />
-                <FormInputField
-                    label="Post Summary"
-                    register={register('summary')}
-                    placeholder="Post Summary"
-                    maxLength={300}
-                    as="textarea"
-                    error={errors.summary}
-                />
-                <FormInputField
-                    label="Post Image"
-                    register={register('blogImage')}
-                    type="file"
-                    accept="image/png,image/jpeg" //this will modify the file type when we click on the choose file input
-                    error={errors.blogImage}
-                />
-                <MarkdownEditor
-                    watch={watch}
-                    setValue={setValue}
-                    label="Post Body"
-                    register={register('body')}
-                    error={errors.body}
-                />
-                <LoadingButton isLoading={isSubmitting} type="submit">
-                    Update Post
-                </LoadingButton>
-            </Form>
+            {user && (
+                <Form onSubmit={handleSubmit(onSubmit)}>
+                    {/* cnotrolId takes care of linking between lavel and the input */}
+                    <FormInputField
+                        label="Post Title"
+                        register={register('title')} // will not submit if is not filled! will auto focus to the input field instead! nice,  the mesage will be put to the react-hook-form's form state.
+                        placeholder="Post Title"
+                        maxLength={100}
+                        error={errors.title}
+                        onBlur={generateSlugFromTitle} //attribute from normal input tag! will run the function when the user took off the focus
+                    />
+                    <FormInputField
+                        label="Post Slug"
+                        register={register('slug')}
+                        placeholder="Post Slug"
+                        maxLength={100}
+                        error={errors.slug}
+                    />
+                    <FormInputField
+                        label="Post Summary"
+                        register={register('summary')}
+                        placeholder="Post Summary"
+                        maxLength={300}
+                        as="textarea"
+                        error={errors.summary}
+                    />
+                    <FormInputField
+                        label="Post Image"
+                        register={register('blogImage')}
+                        type="file"
+                        accept="image/png,image/jpeg" //this will modify the file type when we click on the choose file input
+                        error={errors.blogImage}
+                    />
+                    <MarkdownEditor
+                        watch={watch}
+                        setValue={setValue}
+                        label="Post Body"
+                        register={register('body')}
+                        error={errors.body}
+                    />
+                    <div className="d-flex justify-content-between">
+                        <LoadingButton
+                            isLoading={isSubmitting}
+                            type="submit"
+                            disabled={deleteLoading}
+                        >
+                            Update Post
+                        </LoadingButton>
+                        <Button
+                            disabled={deleteLoading}
+                            variant="outline-danger"
+                            onClick={() => setShowDeleteModal(true)}
+                        >
+                            Delete Blog
+                        </Button>
+                    </div>
+                </Form>
+            )}
+            <ConfirmationModal
+                show={showDeleteModal}
+                title="Confirm Delete"
+                message="Are you sure you want to delete this blog?"
+                confirmButtonText="Delete"
+                onCancel={() => setShowDeleteModal(false)}
+                onConfirm={onDeleteConfirmed}
+                variant="danger"
+            />
         </div>
     )
 }
