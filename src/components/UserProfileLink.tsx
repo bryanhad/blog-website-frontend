@@ -20,7 +20,7 @@ export default function UserProfileLink({ user }: UserProfileLinkProps) {
         >
             <span className="d-flex align-items-center w-fit-content">
                 <Image
-                    src={user.profilePictureUrl || '/no-profile-pic.png'}
+                    src={user.profilePicUrl || '/no-profile-pic.png'}
                     width={40}
                     height={40}
                     alt={`${user.username}'s Profile Pic`}
@@ -39,12 +39,12 @@ type UserToolTipContentProps = {
 }
 
 function UserToolTipContent({
-    user: { username, about, profilePictureUrl, createdAt },
+    user: { username, about, profilePicUrl, createdAt },
 }: UserToolTipContentProps) {
     return (
         <div className="p-2">
             <Image
-                src={profilePictureUrl || '/no-profile-pic.png'}
+                src={profilePicUrl || '/no-profile-pic.png'}
                 width={150}
                 height={150}
                 alt={`${username}'s Profile Pic`}

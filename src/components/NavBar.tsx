@@ -97,7 +97,7 @@ function LoggedInView({ user }: LoggedInViewProps) {
                 className={styles.accountDropdown}
                 title={
                     <Image
-                        src={user.profilePictureUrl || '/no-profile-pic.png'}
+                        src={user.profilePicUrl || '/no-profile-pic.png'}
                         alt="User profile picture"
                         width={40}
                         height={40}

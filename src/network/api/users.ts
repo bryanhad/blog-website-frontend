@@ -6,6 +6,11 @@ export async function getAuthenticatedUser() {
     return res.data
 }
 
+export async function getUserByUsername(username: string) {
+    const res = await api.get<User>(`/users/profile/${username}`)
+    return res.data
+}
+
 type SignUpValues = {
     username: string
     email: string
@@ -18,8 +23,8 @@ export async function signUp(credentials: SignUpValues) {
 }
 
 type LoginValues = {
-    username:string
-    password:string
+    username: string
+    password: string
 }
 
 export async function login(credentials: LoginValues) {
@@ -30,4 +35,25 @@ export async function login(credentials: LoginValues) {
 export async function logout() {
     await api.post('/users/logout') //the await is till important cuz if there's an error we still want the error to be thrown to the catch block
     //only by adding await, the errror would be thrown to the catch block
+}
+
+type UpdateUserValues = {
+    username?: string
+    displayName?: string
+    about?: string
+    profilePic?: File
+}
+
+export async function updateUser(input: UpdateUserValues) {
+    const formData = new FormData()
+    Object.entries(input).forEach(([key, value]) => {
+        //loop through the input object to put em all in the formData!
+        // cuz u have to send the data in formData to support File type!
+        if (value !== undefined) {
+            // the condition is if it is not undefined! cuz if we use the truthy operator, a boolean false would not be inputed :( no bueno
+            formData.append(key, value)
+        }
+    })
+    const res = await api.patch<User>('/users/me', formData)
+    return res.data //return the updated user
 }

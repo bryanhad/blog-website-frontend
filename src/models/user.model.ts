@@ -4,7 +4,7 @@ export type User = {
     email?:string
     displayName?:string
     about?:string
-    profilePictureUrl?:string
+    profilePicUrl?:string
     createdAt:string
     updatedAt:string
 }
