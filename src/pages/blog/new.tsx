@@ -1,4 +1,4 @@
-import { Form } from 'react-bootstrap'
+import { Form, Spinner } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import * as BlogApi from '@/network/api/blog'
 import FormInputField from '@/components/form/FormInputField'
@@ -9,6 +9,7 @@ import { useRouter } from 'next/router'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { requiredFileSchema, requiredStringSchema, slugSchema } from '@/utils/validation'
+import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 
 const validationSchema = yup.object({
     slug: slugSchema.required('Required'),
@@ -22,6 +23,8 @@ const validationSchema = yup.object({
 type CreateBlogFormData = yup.InferType<typeof validationSchema>
 
 export default function CreateBlogPostPage() {
+    const {user, userLoading} = useAuthenticatedUser()
+
     const router = useRouter()
 
     const {
@@ -53,6 +56,12 @@ export default function CreateBlogPostPage() {
         const slug = generateSlug(getValues('title'))
         setValue('slug', slug, { shouldValidate: true })
     }
+
+    if (userLoading) {
+        return <Spinner animation='border' className='d-block m-auto'/>
+    }
+
+    if (!userLoading && !user) router.push('/')
 
     return (
         <div>
