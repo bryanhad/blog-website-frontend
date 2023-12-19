@@ -1,5 +1,6 @@
 import Footer from '@/components/Footer'
 import NavBar from '@/components/NavBar'
+import AuthModalsProvider from '@/components/auth/AuthModalsProvider'
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 import styles from '@/styles/App.module.css'
 import '@/styles/globals.scss'
@@ -17,7 +18,6 @@ const inter = Inter({ subsets: ['latin'] })
 //this is like the layout.tsx in app directory!
 
 export default function App({ Component, pageProps }: AppProps) {
-
     useOnboardingRedirect()
 
     return (
@@ -41,23 +41,25 @@ export default function App({ Component, pageProps }: AppProps) {
             </Head>
 
             <SSRProvider>
-                <div className={inter.className}>
-                    <NextNProgress color="#21FA90" />
-                    <NavBar />
-                    <main>
-                        <Container className={styles.mainContainer}>
-                            <Component {...pageProps} />
-                        </Container>
-                    </main>
-                    <Footer />
-                </div>
+                <AuthModalsProvider>
+                    <div className={inter.className}>
+                        <NextNProgress color="#21FA90" />
+                        <NavBar />
+                        <main>
+                            <Container className={styles.mainContainer}>
+                                <Component {...pageProps} />
+                            </Container>
+                        </main>
+                        <Footer />
+                    </div>
+                </AuthModalsProvider>
             </SSRProvider>
         </>
     )
 }
 
 function useOnboardingRedirect() {
-    const {user} = useAuthenticatedUser()
+    const { user } = useAuthenticatedUser()
 
     const router = useRouter()
 
