@@ -10,6 +10,7 @@ import LoginModal from './auth/LoginModal'
 import SignUpModal from './auth/SignUpModal'
 import { User } from '@/models/user.model'
 import * as UsersApi from '@/network/api/users'
+import ResetPasswordModal from './auth/ResetPasswordModal'
 
 export default function NavBar() {
     const { user } = useAuthenticatedUser()
@@ -107,13 +108,13 @@ function LoggedInView({ user }: LoggedInViewProps) {
             >
                 {user.username && (
                     <>
-                    <NavDropdown.Item
-                        as={Link}
-                        href={'/users/' + user?.username}
-                    >
-                        Profile
-                    </NavDropdown.Item>
-                    <NavDropdown.Divider/>
+                        <NavDropdown.Item
+                            as={Link}
+                            href={'/users/' + user?.username}
+                        >
+                            Profile
+                        </NavDropdown.Item>
+                        <NavDropdown.Divider />
                     </>
                 )}
                 <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
@@ -125,6 +126,7 @@ function LoggedInView({ user }: LoggedInViewProps) {
 function LoggedOutView() {
     const [showLoginModal, setShowLoginModal] = useState(false)
     const [showSignUpModal, setShowSignUpModal] = useState(false)
+    const [showResetPasswordModal, setShowResetPasswordModal] = useState(false)
 
     return (
         <>
@@ -150,7 +152,10 @@ function LoggedOutView() {
                         setShowLoginModal(false)
                         setShowSignUpModal(true)
                     }}
-                    onForgotPasswordClicked={() => {}}
+                    onForgotPasswordClicked={() => {
+                        setShowLoginModal(false)
+                        setShowResetPasswordModal(true)
+                    }}
                 />
             )}
             {showSignUpModal && (
@@ -159,6 +164,15 @@ function LoggedOutView() {
                     onLoginInsteadClicked={() => {
                         setShowSignUpModal(false)
                         setShowLoginModal(true)
+                    }}
+                />
+            )}
+            {showResetPasswordModal && (
+                <ResetPasswordModal
+                    onDismiss={() => setShowResetPasswordModal(false)}
+                    onSignUpClicked={() => {
+                        setShowResetPasswordModal(false)
+                        setShowSignUpModal(true)
                     }}
                 />
             )}
