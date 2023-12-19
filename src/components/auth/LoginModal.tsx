@@ -59,7 +59,7 @@ export default function LoginModal({
 
     return (
         <Modal show onHide={onDismiss} centered>
-            <Modal.Header>
+            <Modal.Header closeButton>
                 <Modal.Title>Log In</Modal.Title>
             </Modal.Header>
             <Modal.Body>

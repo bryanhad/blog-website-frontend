@@ -15,11 +15,16 @@ type SignUpValues = {
     username: string
     email: string
     password: string
+    verificationCode: string
 }
 
 export async function signUp(credentials: SignUpValues) {
     const res = await api.post<User>('/users/signup', credentials)
     return res.data
+}
+
+export async function requestEmailVerificationCode(email: string) {
+    await api.post('/users/verification-code', { email })
 }
 
 type LoginValues = {
