@@ -5,7 +5,7 @@ import FormInputField from '../form/FormInputField'
 import PasswordInputField from '../form/PasswordInputField'
 import LoadingButton from '../LoadingButton'
 import { useState } from 'react'
-import { UnauthorizedError } from '@/network/http-errors'
+import { TooManyReequestsError, UnauthorizedError } from '@/network/http-errors'
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -50,6 +50,8 @@ export default function LoginModal({
         } catch (err) {
             if (err instanceof UnauthorizedError) {
                 setErrorText('Invalid credentials')
+            } else if (err instanceof TooManyReequestsError) {
+                setErrorText(`Yo, chill out. you are making my server sweat.`)
             } else {
                 console.error(err)
                 alert(err)
