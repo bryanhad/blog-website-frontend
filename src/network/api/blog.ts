@@ -1,5 +1,6 @@
 import api from '@/network/axiosInstance'
 import { BlogPost, BlogPostsPage } from '@/models/blog-post.model'
+import { Comment, GetCommentsResponse } from '@/models/comment'
 
 type CreateBlogValues = {
     slug: string
@@ -9,13 +10,15 @@ type CreateBlogValues = {
     blogImage: File
 }
 
-export async function getBlogPost(page:number = 1) {
+export async function getBlogPost(page: number = 1) {
     const res = await api.get<BlogPostsPage>('/posts?page=' + page)
     return res.data
 }
 
-export async function getBlogPostByUser(userId:string, page:number = 1) {
-    const res = await api.get<BlogPostsPage>(`/posts?authorId=${userId}&page=${page}`)
+export async function getBlogPostByUser(userId: string, page: number = 1) {
+    const res = await api.get<BlogPostsPage>(
+        `/posts?authorId=${userId}&page=${page}`
+    )
     return res.data
 }
 
@@ -48,10 +51,14 @@ type UpdateBlogPostValues = {
     blogImage?: File
 }
 
-export async function UpdateBlogPost(blogId:string, input:UpdateBlogPostValues) {
+export async function UpdateBlogPost(
+    blogId: string,
+    input: UpdateBlogPostValues
+) {
     const formData = new FormData() //formData supports file type!
     Object.entries(input).forEach(([key, value]) => {
-        if (value !== undefined) { //cuz if the blogImage's value is undefined, we don't want to append it to the formData
+        if (value !== undefined) {
+            //cuz if the blogImage's value is undefined, we don't want to append it to the formData
             formData.append(key, value)
         }
     })
@@ -59,6 +66,24 @@ export async function UpdateBlogPost(blogId:string, input:UpdateBlogPostValues) 
     await api.patch(`/posts/${blogId}`, formData)
 }
 
-export async function deleteBlog(blogId:string) {
+export async function deleteBlog(blogId: string) {
     await api.delete(`/posts/${blogId}`)
+}
+
+export async function getComments(blogId: string, continueAfterId?: string) {
+    const res = await api.get<GetCommentsResponse>(
+        `/posts/${blogId}/comments?${
+            continueAfterId ? `continueAfterId=${continueAfterId}` : ''
+        }`
+    )
+    return res.data
+}
+
+export async function createComment(
+    blogId: string,
+    text: string,
+    parentCommentId: string | undefined //tis way, we will have to be more strict, we will have to pass the parentCommentId argument, either a string or undefined. So we can differentiate between a top level comment vs a nester comment
+) {
+    const res = await api.post<Comment>(`/posts/${blogId}/comments`, {text, parentCommentId})
+    return res.data
 }

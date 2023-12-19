@@ -12,6 +12,7 @@ import { NotFoundError } from '@/network/http-errors'
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 import { FiEdit } from 'react-icons/fi'
 import useSWR from 'swr'
+import BlogCommentSection from '@/components/comments/BlogCommentSection'
 
 // getStaticProps is better for SEO,
 // cuz it will fetch and make the HTML and fill it with the data at build time! so it will just serve it like instantly! WOAW! :O
@@ -60,6 +61,7 @@ export default function BlogPostPage({ fallbackPost }: BlogPostPageProps) {
     )
 
     const {
+        _id,
         slug,
         title,
         summary,
@@ -119,6 +121,8 @@ export default function BlogPostPage({ fallbackPost }: BlogPostPageProps) {
                     </div>
                     <div>{body}</div>
                 </article>
+                <hr />
+                <BlogCommentSection blogId={_id}/>
             </div>
         </>
     )
