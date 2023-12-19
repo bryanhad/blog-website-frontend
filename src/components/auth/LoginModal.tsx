@@ -10,6 +10,7 @@ import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { requiredStringSchema } from '@/utils/validation'
+import SocialSignInSection from './SocialSignInSection'
 
 //setup validation schema with yup
 const validationSchema = yup.object({
@@ -93,6 +94,8 @@ export default function LoginModal({
                         Log In
                     </LoadingButton>
                 </Form>
+                <hr />
+                <SocialSignInSection />
                 <div className="d-flex align-items-center gap-1 justify-content-center mt-1">
                     Don&apos;t have an account yet?
                     <Button variant="link" onClick={onSignUpInsteadClicked}>

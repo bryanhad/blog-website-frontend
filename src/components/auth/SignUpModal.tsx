@@ -10,6 +10,7 @@ import { BadRequstError, ConflictError } from '@/network/http-errors'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { emailSchema, passwordSchema, usernameSchema } from '@/utils/validation'
+import SocialSignInSection from './SocialSignInSection'
 
 const validationSchema = yup.object({
     username: usernameSchema.required('Required'),
@@ -28,7 +29,7 @@ export default function SignUpModal({
     onDismiss,
     onLoginInsteadClicked,
 }: SignUpModalProps) {
-    const {mutateUser} = useAuthenticatedUser()
+    const { mutateUser } = useAuthenticatedUser()
 
     const [errorText, setErrorText] = useState<string | null>(null)
 
@@ -36,7 +37,7 @@ export default function SignUpModal({
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-    } = useForm<SignUpFormData>({resolver: yupResolver(validationSchema)})
+    } = useForm<SignUpFormData>({ resolver: yupResolver(validationSchema) })
 
     async function onSubmit(credentials: SignUpFormData) {
         try {
@@ -45,7 +46,8 @@ export default function SignUpModal({
             mutateUser(newUser)
             onDismiss()
         } catch (err) {
-            if (err instanceof ConflictError || err instanceof BadRequstError) { //conflict is if the username/password already exists, barReqError iss for if the email verivication code is wrong.. we haven't impllement this tho
+            if (err instanceof ConflictError || err instanceof BadRequstError) {
+                //conflict is if the username/password already exists, barReqError iss for if the email verivication code is wrong.. we haven't impllement this tho
                 setErrorText(err.message)
             } else {
                 console.error(err)
@@ -91,9 +93,11 @@ export default function SignUpModal({
                         Sign Up
                     </LoadingButton>
                 </Form>
-                <div className='d-flex align-items-center gap-1 justify-content-center mt-1'>
+                <hr />
+                <SocialSignInSection />
+                <div className="d-flex align-items-center gap-1 justify-content-center mt-1">
                     Already have an account?
-                    <Button variant='link' onClick={onLoginInsteadClicked}>
+                    <Button variant="link" onClick={onLoginInsteadClicked}>
                         Log In
                     </Button>
                 </div>

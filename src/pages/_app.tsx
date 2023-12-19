@@ -1,12 +1,15 @@
 import Footer from '@/components/Footer'
 import NavBar from '@/components/NavBar'
+import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 import styles from '@/styles/App.module.css'
 import '@/styles/globals.scss'
 import '@/styles/utils.css'
 import type { AppProps } from 'next/app'
 import { Inter } from 'next/font/google'
 import Head from 'next/head'
+import { useRouter } from 'next/router'
 import NextNProgress from 'nextjs-progressbar'
+import { useEffect } from 'react'
 import { Container, SSRProvider } from 'react-bootstrap'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -14,6 +17,9 @@ const inter = Inter({ subsets: ['latin'] })
 //this is like the layout.tsx in app directory!
 
 export default function App({ Component, pageProps }: AppProps) {
+
+    useOnboardingRedirect()
+
     return (
         <>
             <Head>
@@ -44,13 +50,20 @@ export default function App({ Component, pageProps }: AppProps) {
                         </Container>
                     </main>
                     <Footer />
-                    {/* <LoginModal
-                        onDismiss={() => {}}
-                        onSignUpInsteadClicked={() => {}}
-                        onForgotPasswordClicked={() => {}}
-                    /> */}
                 </div>
             </SSRProvider>
         </>
     )
+}
+
+function useOnboardingRedirect() {
+    const {user} = useAuthenticatedUser()
+
+    const router = useRouter()
+
+    useEffect(() => {
+        if (user && !user.username && router.pathname !== '/onboarding') {
+            router.push('/onboarding?returnTo=' + router.asPath) //router.asPath is the same as router.pathname, but it still maintains the query!
+        }
+    }, [user, router])
 }
