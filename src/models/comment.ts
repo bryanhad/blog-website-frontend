@@ -9,6 +9,8 @@ export type Comment = {
 
     createdAt:string
     updatedAt:string
+
+    repliesCount?:number //this is only for the front end.. the backend doesn't rlly have this field on it's model
 }
 
 export type GetCommentsResponse = {

@@ -1,6 +1,6 @@
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
 import { Comment } from '@/models/comment'
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { AuthModalsContext } from '../auth/AuthModalsProvider'
@@ -21,6 +21,9 @@ type CreateCommentBoxProps = {
     parentCommentId?: string //we only pass this prop if this createCommentBox component is for replying existing comments
     title: string
     onCommentCreated: (comment: Comment) => void
+    showCancel?: boolean
+    onCancel?: () => void
+    defaultText?: string
 }
 
 export default function CreateCommentBox({
@@ -28,6 +31,9 @@ export default function CreateCommentBox({
     title,
     parentCommentId,
     onCommentCreated,
+    showCancel,
+    onCancel,
+    defaultText,
 }: CreateCommentBoxProps) {
     const { user } = useAuthenticatedUser()
     const { showLoginModal } = useContext(AuthModalsContext)
@@ -37,7 +43,11 @@ export default function CreateCommentBox({
         formState: { isSubmitting }, //we don't need the erros cuz we won't show em anyways
         handleSubmit,
         reset, //this will allow us to reset the input field to make it empty again after the user comments
-    } = useForm<createCommentInput>({ resolver: yupResolver(valdiationSchema) })
+        setFocus,
+    } = useForm<createCommentInput>({
+        defaultValues: { text: defaultText || '' }, //set default value to the text field if the defaultText is passed that is.. it is optional.. mainly for when opening the createComment box to reply to another comment.. we will set a default value of the parent comment's username
+        resolver: yupResolver(valdiationSchema),
+    })
 
     async function onSubmit({ text }: createCommentInput) {
         if (!text) return //this is why we don't need to get the errors or even bother to setup required error message. cuz the user probably knows that the have to fill in the input field to comment lel
@@ -55,6 +65,13 @@ export default function CreateCommentBox({
             alert(err)
         }
     }
+
+    useEffect(() => {
+        if (parentCommentId) {
+            //if this create box is a reply to a parent comment, when rendered, set the focus to the input field
+            setFocus('text')
+        }
+    }, [parentCommentId, setFocus])
 
     if (!user) {
         return (
@@ -81,6 +98,15 @@ export default function CreateCommentBox({
                 <LoadingButton type="submit" isLoading={isSubmitting}>
                     Send
                 </LoadingButton>
+                {showCancel && (
+                    <Button
+                        onClick={onCancel}
+                        className="ms-2"
+                        variant="outline-primary"
+                    >
+                        Cancel
+                    </Button>
+                )}
             </Form>
         </div>
     )

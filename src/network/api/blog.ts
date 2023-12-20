@@ -70,9 +70,24 @@ export async function deleteBlog(blogId: string) {
     await api.delete(`/posts/${blogId}`)
 }
 
-export async function getComments(blogId: string, continueAfterId?: string) {
+export async function getBlogComments(
+    blogId: string,
+    continueAfterId?: string
+) {
     const res = await api.get<GetCommentsResponse>(
         `/posts/${blogId}/comments?${
+            continueAfterId ? `continueAfterId=${continueAfterId}` : ''
+        }`
+    )
+    return res.data
+}
+
+export async function getCommentReplies(
+    commentId: string,
+    continueAfterId?: string
+) {
+    const res = await api.get<GetCommentsResponse>(
+        `/posts/comments/${commentId}/replies?${
             continueAfterId ? `continueAfterId=${continueAfterId}` : ''
         }`
     )
@@ -84,6 +99,21 @@ export async function createComment(
     text: string,
     parentCommentId: string | undefined //tis way, we will have to be more strict, we will have to pass the parentCommentId argument, either a string or undefined. So we can differentiate between a top level comment vs a nester comment
 ) {
-    const res = await api.post<Comment>(`/posts/${blogId}/comments`, {text, parentCommentId})
+    const res = await api.post<Comment>(`/posts/${blogId}/comments`, {
+        text,
+        parentCommentId,
+    })
     return res.data
 }
+
+export async function updateComment(commentId: string, newText: string) {
+    const res = await api.patch<Comment>(`/posts/comments/${commentId}`, {
+        newText,
+    })
+    return res.data
+}
+
+export async function deleteComment(commentId: string) {
+   await api.delete(`/posts/comments/${commentId}`)
+   
+} 

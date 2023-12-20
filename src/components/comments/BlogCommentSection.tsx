@@ -4,6 +4,7 @@ import * as BlogApi from '@/network/api/blog'
 import CreateCommentBox from './CreateCommentBox'
 import Comment from './Comment'
 import { Button, Spinner } from 'react-bootstrap'
+import CommentThread from './CommentThread'
 
 type BlogCommentSectionProps = {
     blogId: string
@@ -31,7 +32,10 @@ function CommentSection({ blogId }: BlogCommentSectionProps) {
             setCommentsLoading(true)
             setCommentsLoadingIsError(false)
             try {
-                const res = await BlogApi.getComments(blogId, continueAfterId)
+                const res = await BlogApi.getBlogComments(
+                    blogId,
+                    continueAfterId
+                )
                 if (!continueAfterId) {
                     // if there is no continue afterId, we must be loading the first comments!
                     setComments(res.comments)
@@ -60,6 +64,26 @@ function CommentSection({ blogId }: BlogCommentSectionProps) {
         setComments([newComment, ...comments]) //we append the new comment to the first of the array of comments
     }
 
+    function handleCommentUpdated(updatedComment: CommentModel) {
+        //here, we will replace the comment that the user updated to with the old comment in the commend aray
+        const updatedComments = comments.map((existingComment) =>
+            existingComment._id === updatedComment._id //if the existingCommentId is the same as the updatedCommentId, well just return the updated comment, if not, just return the rest as the same
+                ? {
+                      ...updatedComment,
+                      repliesCount: existingComment.repliesCount,
+                  } //we need to do this cuz from my backend, after the update, the backend doesn't return the repliesCount of the updated comment.. we can just just the "before updated comment" replies count, since it is not altered in any way..
+                : existingComment
+        )
+        setComments(updatedComments)
+    }
+
+    function handleCommentDeleted(deletedComment: CommentModel) {
+        const updatedComments = comments.filter(
+            (comment) => comment._id !== deletedComment._id //filter out the deleted comment from the comments state
+        )
+        setComments(updatedComments)
+    }
+
     return (
         <div>
             <p className="h5">Comments</p>
@@ -69,7 +93,12 @@ function CommentSection({ blogId }: BlogCommentSectionProps) {
                 onCommentCreated={handleCommentCreated}
             />
             {comments.map((comment) => (
-                <Comment comment={comment} key={comment._id} />
+                <CommentThread
+                    comment={comment}
+                    onCommentUpdated={handleCommentUpdated}
+                    onCommentDeleted={handleCommentDeleted}
+                    key={comment._id}
+                />
             ))}
             <div className="mt-2 text-center">
                 {commentsPaginationEnd &&
