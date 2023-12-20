@@ -89,6 +89,7 @@ export default function BlogPostPage({ fallbackPost }: BlogPostPageProps) {
             <Head>
                 <title>{`${title} - Bryan Hadinata`}</title>
                 <meta name="description" content={summary} />
+                <meta property='og:image' key='og:image' content={blogImage}/>
             </Head>
 
             <div className={styles.container}>

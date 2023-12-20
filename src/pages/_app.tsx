@@ -38,12 +38,14 @@ export default function App({ Component, pageProps }: AppProps) {
                     content="width=device-width, initial-scale=1"
                 />
                 <link rel="icon" href="/favicon.ico" />
+                <meta property='og:image' key='og:image' content='https://bryanhadinata.com/social_media_preview_image.png'/>
+                <meta name='twitter:card' content='summary_large_image' /> 
             </Head>
 
             <SSRProvider>
                 <AuthModalsProvider>
                     <div className={inter.className}>
-                        <NextNProgress color="#21FA90" />
+                        <NextNProgress color="black" />
                         <NavBar />
                         <main>
                             <Container className={styles.mainContainer}>
