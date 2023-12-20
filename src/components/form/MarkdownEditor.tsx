@@ -7,6 +7,8 @@ import {
     UseFormWatch,
 } from 'react-hook-form'
 import Markdown from 'react-markdown'
+import * as BlogApi from '@/network/api/blog'
+import RenderMarkdown from '../RenderMarkdown'
 
 const MdEditor = dynamic(() => import('react-markdown-editor-lite'), {
     ssr: false,
@@ -29,6 +31,17 @@ export default function MarkdownEditor({
     setValue,
     editorHeight = 500,
 }: MarkdownEditorProps) {
+
+    async function uploadInBlogImage(image: File) {
+        try {
+            const res = await BlogApi.uploadInBlogImage(image)
+            return res.imageUrl
+        } catch (err) {
+            console.error(err)
+            alert(err)
+        }
+    }
+
     return (
         <Form.Group className="mb-3">
             {label && (
@@ -41,7 +54,7 @@ export default function MarkdownEditor({
             <MdEditor
                 {...register}
                 style={{ height: `${editorHeight}px` }}
-                renderHTML={(text) => <Markdown>{text}</Markdown>}
+                renderHTML={(text) => <RenderMarkdown>{text}</RenderMarkdown>}
                 id={register.name + '-input'}
                 value={watch(register.name)} //this is to get the current value of the input in react-hook-form based on the name passed.
                 onChange={({ text }) => {
@@ -52,6 +65,8 @@ export default function MarkdownEditor({
                     }) //react form will now know that the user 'touched' the input form, and we can show a worning if the user decides to close the window while writing on the field.
                 }}
                 className={error ? 'is-invalid' : ''}
+                onImageUpload={uploadInBlogImage} //this props will call a uploadFunc which is a async function that will return the Url string
+                imageAccept='.jpg,.png'
             />
             <Form.Control.Feedback type="invalid">
                 {error?.message}

@@ -70,6 +70,14 @@ export async function deleteBlog(blogId: string) {
     await api.delete(`/posts/${blogId}`)
 }
 
+export async function uploadInBlogImage(image: File) {
+    const formData = new FormData()
+
+    formData.append('inBlogImage', image) //the key of the formData that contains the image has to be the same as what we set the multer middleware in our endpoint route to what field the multer middleware to look out for..
+    const res = await api.post<{ imageUrl: string }>('/posts/images', formData)
+    return res.data
+}
+
 export async function getBlogComments(
     blogId: string,
     continueAfterId?: string
@@ -114,6 +122,5 @@ export async function updateComment(commentId: string, newText: string) {
 }
 
 export async function deleteComment(commentId: string) {
-   await api.delete(`/posts/comments/${commentId}`)
-   
-} 
+    await api.delete(`/posts/comments/${commentId}`)
+}
