@@ -3,6 +3,7 @@ import { formatDate } from '@/utils/utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { OverlayTrigger, Tooltip } from 'react-bootstrap'
+import noProfilePic from '@/assets/images/no-profile-pic.png'
 
 type UserProfileLinkProps = {
     user: User
@@ -20,7 +21,7 @@ export default function UserProfileLink({ user }: UserProfileLinkProps) {
         >
             <span className="d-flex align-items-center w-fit-content">
                 <Image
-                    src={user.profilePicUrl || '/no-profile-pic.png'}
+                    src={user.profilePicUrl || noProfilePic}
                     width={40}
                     height={40}
                     alt={`${user.username}'s Profile Pic`}
@@ -44,7 +45,7 @@ function UserToolTipContent({
     return (
         <div className="p-2">
             <Image
-                src={profilePicUrl || '/no-profile-pic.png'}
+                src={profilePicUrl || noProfilePic}
                 width={150}
                 height={150}
                 alt={`${username}'s Profile Pic`}

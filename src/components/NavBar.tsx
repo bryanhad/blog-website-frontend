@@ -9,6 +9,8 @@ import { useContext } from 'react'
 import { Button, Container, Nav, NavDropdown, Navbar } from 'react-bootstrap'
 import { FiEdit } from 'react-icons/fi'
 import { AuthModalsContext } from './auth/AuthModalsProvider'
+import logo from '@/assets/images/logo.png'
+import noProfilePic from '@/assets/images/no-profile-pic.png'
 
 export default function NavBar() {
     const { user } = useAuthenticatedUser()
@@ -25,7 +27,7 @@ export default function NavBar() {
             <Container>
                 <Navbar.Brand as={Link} href="/" className="d-flex gap-1">
                     <Image
-                        src={'/logo.png'}
+                        src={logo}
                         alt="Bryan Hadinata's logo"
                         width={30}
                         height={30}
@@ -96,7 +98,7 @@ function LoggedInView({ user }: LoggedInViewProps) {
                 className={styles.accountDropdown}
                 title={
                     <Image
-                        src={user.profilePicUrl || '/no-profile-pic.png'}
+                        src={user.profilePicUrl || noProfilePic}
                         alt="User profile picture"
                         width={40}
                         height={40}

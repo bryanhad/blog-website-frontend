@@ -17,6 +17,7 @@ import useSWR from 'swr'
 import BlogPostsGrid from '@/components/BlogPostsGrid'
 import { NotFoundError } from '@/network/http-errors'
 import PaginationBar from '@/components/PaginationBar'
+import noProfilePic from '@/assets/images/no-profile-pic.png'
 
 // getServerSideProps will fetch serverSide, but not on build time like getStaticParam
 // we do this cuz we always want to get the latest data
@@ -104,7 +105,7 @@ function UserInfoSection({
             {/* sm='auto' makes so the column for this is going to be only as wide as it needs to be */}
             <Col sm="auto">
                 <Image
-                    src={profilePicUrl || '/no-profile-pic.png'}
+                    src={profilePicUrl || noProfilePic}
                     alt={`${username}'s Profile Picture`}
                     height={200}
                     width={200}
