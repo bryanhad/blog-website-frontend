@@ -19,3 +19,7 @@ export function formatRelativeDate(dateString: string) {
         addSuffix: true, //add the suffix like '1 hour ago', '2 hours ago', or '10 minutes ago'
     })
 }
+
+export function isServer() {
+    return typeof window === 'undefined' //we don't check the window object it self.. cuz on the server, it is litterally not exists.. so we can check the type of it instead to get the value of undefined if it is on the server
+}

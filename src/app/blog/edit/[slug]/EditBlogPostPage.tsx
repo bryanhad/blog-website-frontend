@@ -5,13 +5,14 @@ import LoadingButton from '@/components/LoadingButton'
 import FormInputField from '@/components/form/FormInputField'
 import MarkdownEditor from '@/components/form/MarkdownEditor'
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
+import useAutoSave from '@/hooks/useAutoSave'
 import { BlogPost } from '@/models/blog-post.model'
 import * as BlogApi from '@/network/api/blog'
 import { generateSlug } from '@/utils/utils'
 import { requiredStringSchema, slugSchema } from '@/utils/validation'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, Form, Spinner } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
@@ -47,6 +48,7 @@ export default function EditBlogPage({ blog }: EditBlogPageProps) {
         setValue,
         getValues,
         watch,
+        reset,
     } = useForm<EditPostFormData>({
         resolver: yupResolver(validationSchema),
         defaultValues: {
@@ -57,6 +59,20 @@ export default function EditBlogPage({ blog }: EditBlogPageProps) {
         },
     })
 
+    const {getValue: getAutoSavedValue, clearValue: clearAutoSaveValue} = useAutoSave('edit-post-input-' + blog._id, {
+        ...watch(),
+        blogImage: undefined,
+    })
+
+    useEffect(() => {
+        const autoSavedValue = getAutoSavedValue()
+        if (autoSavedValue) {
+            reset(autoSavedValue) //set the defaultValues of the form to our autoSavedValue that we get from the session storge..
+            // we can't just do the defaultValue set on the useForm.. cuz our useAutoSave hook depends on the initialization of the useForm.
+            // it needs the watch() func that we get from the useForm.
+        }
+    }, [getAutoSavedValue, reset])
+
     async function onSubmit({ blogImage, ...inputs }: EditPostFormData) {
         setIsSubmitting(true)
         try {
@@ -64,6 +80,7 @@ export default function EditBlogPage({ blog }: EditBlogPageProps) {
                 ...inputs,
                 blogImage: blogImage?.item(0) || undefined, //get the first index of the fileList of field blogImage
             })
+            clearAutoSaveValue() //clear the session storage
             router.refresh()
             router.push('/blog/' + inputs.slug)
         } catch (err) {

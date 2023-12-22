@@ -4,12 +4,17 @@ import LoadingButton from '@/components/LoadingButton'
 import FormInputField from '@/components/form/FormInputField'
 import MarkdownEditor from '@/components/form/MarkdownEditor'
 import useAuthenticatedUser from '@/hooks/useAuthenticatedUser'
+import useAutoSave from '@/hooks/useAutoSave'
 import * as BlogApi from '@/network/api/blog'
 import { generateSlug } from '@/utils/utils'
-import { requiredFileSchema, requiredStringSchema, slugSchema } from '@/utils/validation'
+import {
+    requiredFileSchema,
+    requiredStringSchema,
+    slugSchema,
+} from '@/utils/validation'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Form, Spinner } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
@@ -19,14 +24,13 @@ const validationSchema = yup.object({
     title: requiredStringSchema,
     summary: requiredStringSchema,
     body: requiredStringSchema,
-    blogImage: requiredFileSchema
+    blogImage: requiredFileSchema,
 })
-
 
 type CreateBlogFormData = yup.InferType<typeof validationSchema>
 
 export default function CreateBlogPostPage() {
-    const {user, userLoading} = useAuthenticatedUser()
+    const { user, userLoading } = useAuthenticatedUser()
 
     const router = useRouter()
 
@@ -39,9 +43,26 @@ export default function CreateBlogPostPage() {
         setValue,
         getValues, //getValues only get the value when it is called.
         watch, //watch is updated in real time
-    } = useForm<CreateBlogFormData>({resolver: yupResolver(validationSchema)})
+        reset
+    } = useForm<CreateBlogFormData>({ resolver: yupResolver(validationSchema), })
     // to use useformhook, first, we have to register all input fields.. it's simply just spreading the props..
     // then use pass our own onSubmit function to the handleSubmit, and pass that into onSubmit attr of the form..
+
+    const { getValue: getAutoSavedValue, clearValue: clearAutoSaveValue } =
+        useAutoSave('new-blog-input', {
+            ...watch(),
+            blogImage: undefined, //we must set the blogImage to undefined.. cuz a session storage can't store a type FileList value..
+            //sessionStorage can only save text input
+        })
+
+    useEffect(() => {
+        const autoSavedValue = getAutoSavedValue()
+        if (autoSavedValue) {
+            reset(autoSavedValue) //set the defaultValues of the form to our autoSavedValue that we get from the session storge..
+            // we can't just do the defaultValue set on the useForm.. cuz our useAutoSave hook depends on the initialization of the useForm.
+            // it needs the watch() func that we get from the useForm.
+        }
+    }, [getAutoSavedValue, reset])
 
     async function onSubmit({ blogImage, ...inputs }: CreateBlogFormData) {
         setIsSubmitting(true)
@@ -50,12 +71,13 @@ export default function CreateBlogPostPage() {
                 ...inputs,
                 blogImage: blogImage[0], // we only send the first index cuz that's what the createBlogPost expects.. a single File!
             })
+            clearAutoSaveValue() //clear the session storage
             router.push('/blog/' + inputs.slug) //we await the router.push so that the formState isSubmitting would still be true while loading the router.push finnish!
         } catch (err) {
             setIsSubmitting(false)
             console.error(err)
             alert(err)
-        } 
+        }
     }
 
     function generateSlugFromTitle() {
@@ -65,7 +87,7 @@ export default function CreateBlogPostPage() {
     }
 
     if (userLoading) {
-        return <Spinner animation='border' className='d-block m-auto'/>
+        return <Spinner animation="border" className="d-block m-auto" />
     }
 
     if (!userLoading && !user) router.push('/')
