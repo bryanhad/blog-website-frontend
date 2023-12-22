@@ -40,8 +40,6 @@ export default function useAutoSave<T>(key: string, value: T, interval = 3000) {
 
     useEffect(() => {
         if (autoSave && stringifiedValue !== lastSavedValue) {
-            //check if the
-            console.log('autosave!')
             sessionStorage.setItem(key, stringifiedValue)
 
             setAutoSave(false) // set the autosave to false, where it will be true again after 3 seconds has passed
