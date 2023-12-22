@@ -2,9 +2,8 @@ import { BlogPost } from '@/models/blog-post.model'
 import { formatDate } from '@/utils/utils'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Card } from '@/components/Bootstrap'
 import UserProfileLink from '../UserProfileLink'
-import { CardBody, CardTitle, CardText } from '@/components/Bootstrap'
+import { CardBody, CardTitle, CardText, Card } from '@/components/Bootstrap'
 
 type BlogPostCardProps = {
     post: BlogPost
@@ -15,7 +14,7 @@ export default function BlogPostCard({
     post: { slug, title, summary, blogImage, author, createdAt },
     className,
 }: BlogPostCardProps) {
-    const postLink = '/blog/' + slug
+    const postLink = `/blog/${slug}`
 
     return (
         <Card className={className}>
