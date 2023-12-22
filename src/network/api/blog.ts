@@ -10,7 +10,8 @@ type CreateBlogValues = {
     blogImage: File
 }
 
-export async function getBlogPost(page: number = 1) {
+export async function getBlogPosts(page: number = 1) {
+    console.log('fetching new blog posts..')
     const res = await api.get<BlogPostsPage>('/posts?page=' + page)
     return res.data
 }

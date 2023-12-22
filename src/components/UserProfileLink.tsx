@@ -2,7 +2,7 @@ import { User } from '@/models/user.model'
 import { formatDate } from '@/utils/utils'
 import Image from 'next/image'
 import Link from 'next/link'
-import { OverlayTrigger, Tooltip } from 'react-bootstrap'
+import { OverlayTrigger, Tooltip } from '@/components/Bootstrap'
 import noProfilePic from '@/assets/images/no-profile-pic.png'
 
 type UserProfileLinkProps = {

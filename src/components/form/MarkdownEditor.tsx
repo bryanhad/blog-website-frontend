@@ -1,3 +1,4 @@
+import * as BlogApi from '@/network/api/blog'
 import dynamic from 'next/dynamic'
 import { Form } from 'react-bootstrap'
 import {
@@ -6,9 +7,7 @@ import {
     UseFormSetValue,
     UseFormWatch,
 } from 'react-hook-form'
-import Markdown from 'react-markdown'
-import * as BlogApi from '@/network/api/blog'
-import RenderMarkdown from '../RenderMarkdown'
+import RenderMarkdown from '../markdown/RenderMarkdown'
 
 const MdEditor = dynamic(() => import('react-markdown-editor-lite'), {
     ssr: false,
@@ -31,7 +30,6 @@ export default function MarkdownEditor({
     setValue,
     editorHeight = 500,
 }: MarkdownEditorProps) {
-
     async function uploadInBlogImage(image: File) {
         try {
             const res = await BlogApi.uploadInBlogImage(image)
@@ -66,7 +64,7 @@ export default function MarkdownEditor({
                 }}
                 className={error ? 'is-invalid' : ''}
                 onImageUpload={uploadInBlogImage} //this props will call a uploadFunc which is a async function that will return the Url string
-                imageAccept='.jpg,.png'
+                imageAccept=".jpg,.png"
             />
             <Form.Control.Feedback type="invalid">
                 {error?.message}
